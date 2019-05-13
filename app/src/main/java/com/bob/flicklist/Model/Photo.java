@@ -11,9 +11,9 @@ public class Photo {
    private int ispublic;
    private int isfriend;
    private int isfamily;
-   private String url_s;
+   private String imageUrl;
 
-   public Photo(String id, String owner, String secret, String server, int farm, String title, int ispublic, int isfriend, int isfamily, String url_s) {
+   public Photo(String id, String owner, String secret, String server, int farm, String title, int ispublic, int isfriend, int isfamily) {
       this.id = id;
       this.owner = owner;
       this.secret = secret;
@@ -23,7 +23,13 @@ public class Photo {
       this.ispublic = ispublic;
       this.isfriend = isfriend;
       this.isfamily = isfamily;
-      this.url_s = url_s;
+      makeImageUrl();
+   }
+
+   private void makeImageUrl() {
+      StringBuilder sb = new StringBuilder("https://farm").append(farm).append(".staticflickr.com/")
+              .append(server).append("/").append(id).append("_").append(secret).append(".jpg");
+      this.imageUrl =  sb.toString();
    }
 
    public String getId() {
@@ -98,11 +104,12 @@ public class Photo {
       this.isfamily = isfamily;
    }
 
-   public String getUrl_s() {
-      return url_s;
+   public String getImageUrl() {
+      makeImageUrl();
+      return imageUrl;
    }
 
-   public void setUrl_s(String url_s) {
-      this.url_s = url_s;
+   public void setImageUrl(String imageUrl) {
+      this.imageUrl = imageUrl;
    }
 }

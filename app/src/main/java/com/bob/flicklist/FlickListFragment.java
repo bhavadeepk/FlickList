@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +43,8 @@ public class FlickListFragment extends Fragment implements FlickListAdapter.List
     private FlickListAdapter adapter;
     private ArrayList<Photo> photoList;
     private TextView titleTextView;
+    private ProgressBar progressBar;
+    private boolean isListShowing;
 
     public FlickListFragment() {
         super();
@@ -68,6 +71,12 @@ public class FlickListFragment extends Fragment implements FlickListAdapter.List
         mListener = null;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -77,7 +86,8 @@ public class FlickListFragment extends Fragment implements FlickListAdapter.List
             photoList = new ArrayList<>();
             adapter = new FlickListAdapter(context, R.layout.item_flick_list, photoList, this);
             listView.setAdapter(adapter);
-
+            progressBar = rootView.findViewById(R.id.progressBar);
+            progressBar.setIndeterminate(true);
             titleTextView = rootView.findViewById(R.id.title_text_view);
 
         }
@@ -145,6 +155,9 @@ public class FlickListFragment extends Fragment implements FlickListAdapter.List
                     if (response.body() != null) {
                         photoList.addAll(response.body().getPhotos().getPhoto());
                         adapter.notifyDataSetChanged();
+                        if (progressBar.isShown()) {
+                            progressBar.setVisibility(View.INVISIBLE);
+                        }
                     }
                 }else {
                     if (response.errorBody() != null) {

@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bob.flicklist.Model.Photo;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -54,6 +56,19 @@ public class FlickListAdapter extends ArrayAdapter<Photo> {
 
         Photo photo = photos.get(position);
         viewHolder.titleTextView.setText(photo.getTitle());
+String imageUri = photo.getImageUrl();
+        Picasso.with(context).load(imageUri).centerCrop().fit().into(viewHolder.flickImageView, new Callback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+
         return convertView;
     }
 
