@@ -75,6 +75,8 @@ public class FlickListFragment extends Fragment implements FlickListAdapter.List
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
+
     }
 
     @Nullable
@@ -87,43 +89,49 @@ public class FlickListFragment extends Fragment implements FlickListAdapter.List
             adapter = new FlickListAdapter(context, R.layout.item_flick_list, photoList, this);
             listView.setAdapter(adapter);
             progressBar = rootView.findViewById(R.id.progressBar);
-            progressBar.setIndeterminate(true);
             titleTextView = rootView.findViewById(R.id.title_text_view);
+//Check if internet permission is granted
 
+            if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.INTERNET) == PERMISSION_GRANTED) {
+                //If internet is available get cloud data else look for local data
+                if(isInternetAvailable()){
+                    retrieveFlicksFromCloud();
+                }
+                else {
+                    internetException();
+                }
+
+            }
+            else{ // If device is marshmellow or above dynamically ask for internet permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(new String[]{Manifest.permission.CAMERA}, FlickListFragment.REQUEST_CODE);
+                }
+                else{
+                    Toast.makeText(getActivity(), "Please grant internet permission", Toast.LENGTH_SHORT).show();
+                    //Intent to navigate user to the application settings page to enable internet permission
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                    intent.setData(uri);
+                    startActivity(intent);
+                }
+            }
         }
 
         return rootView;
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        //Check if internet permission is granted
 
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.INTERNET) == PERMISSION_GRANTED) {
-            //If internet is available get cloud data else look for local data
-            if(isInternetAvailable()){
-                retrieveFlicksFromCloud();
-            }
-            else {
-                internetException();
-            }
-
-        }
-        else{ // If device is marshmellow or above dynamically ask for internet permission
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA}, FlickListFragment.REQUEST_CODE);
-            }
-            else{
-                Toast.makeText(getActivity(), "Please grant internet permission", Toast.LENGTH_SHORT).show();
-                //Intent to navigate user to the application settings page to enable internet permission
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
-                intent.setData(uri);
-                startActivity(intent);
-            }
-        }
     }
 
     private void internetException() {
@@ -146,6 +154,8 @@ public class FlickListFragment extends Fragment implements FlickListAdapter.List
     }
 
     private void retrieveFlicksFromCloud(){
+        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setIndeterminate(true);
         RetrofitClient.FlickrService flickrService = RetrofitClient.getFlickrService();
         Call<FlicksResponse> recents = flickrService.getRecents();
         recents.enqueue(new Callback<FlicksResponse>() {
@@ -153,11 +163,13 @@ public class FlickListFragment extends Fragment implements FlickListAdapter.List
             public void onResponse(Call<FlicksResponse> call, Response<FlicksResponse> response) {
                 if(response.isSuccessful()){
                     if (response.body() != null) {
+                        photoList.clear();
                         photoList.addAll(response.body().getPhotos().getPhoto());
                         adapter.notifyDataSetChanged();
                         if (progressBar.isShown()) {
                             progressBar.setVisibility(View.INVISIBLE);
                         }
+
                     }
                 }else {
                     if (response.errorBody() != null) {

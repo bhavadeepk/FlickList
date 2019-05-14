@@ -1,6 +1,10 @@
 package com.bob.flicklist.Model;
 
-public class Photo {
+import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Photo implements Parcelable {
 
    private String id;
    private String owner;
@@ -12,6 +16,7 @@ public class Photo {
    private int isfriend;
    private int isfamily;
    private String imageUrl;
+   private Bitmap image;
 
    public Photo(String id, String owner, String secret, String server, int farm, String title, int ispublic, int isfriend, int isfamily) {
       this.id = id;
@@ -25,6 +30,32 @@ public class Photo {
       this.isfamily = isfamily;
       makeImageUrl();
    }
+
+   protected Photo(Parcel in) {
+      id = in.readString();
+      owner = in.readString();
+      secret = in.readString();
+      server = in.readString();
+      farm = in.readInt();
+      title = in.readString();
+      ispublic = in.readInt();
+      isfriend = in.readInt();
+      isfamily = in.readInt();
+      imageUrl = in.readString();
+      image = in.readParcelable(Bitmap.class.getClassLoader());
+   }
+
+   public static final Creator<Photo> CREATOR = new Creator<Photo>() {
+      @Override
+      public Photo createFromParcel(Parcel in) {
+         return new Photo(in);
+      }
+
+      @Override
+      public Photo[] newArray(int size) {
+         return new Photo[size];
+      }
+   };
 
    private void makeImageUrl() {
       StringBuilder sb = new StringBuilder("https://farm").append(farm).append(".staticflickr.com/")
@@ -111,5 +142,33 @@ public class Photo {
 
    public void setImageUrl(String imageUrl) {
       this.imageUrl = imageUrl;
+   }
+
+   public void setImage(Bitmap image) {
+      this.image = image;
+   }
+
+   public Bitmap getImage() {
+      return image;
+   }
+
+   @Override
+   public int describeContents() {
+      return 0;
+   }
+
+   @Override
+   public void writeToParcel(Parcel dest, int flags) {
+      dest.writeString(id);
+      dest.writeString(owner);
+      dest.writeString(secret);
+      dest.writeString(server);
+      dest.writeInt(farm);
+      dest.writeString(title);
+      dest.writeInt(ispublic);
+      dest.writeInt(isfriend);
+      dest.writeInt(isfamily);
+      dest.writeString(imageUrl);
+      dest.writeParcelable(image, flags);
    }
 }
